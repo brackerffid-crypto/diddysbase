@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Secret Chat</title>
+  <meta charset="UTF-8">
+  <script type="module">
+    // Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } 
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // 🔹 Paste your Firebase config here:
+    const firebaseConfig = {
+      apiKey: "AIzaSyDeiEZqvw3z_LVivjNnCkP3iPruVCL7Jno",
+      authDomain: "secret-chat-b548c.firebaseapp.com",
+      projectId: "secret-chat-b548c",
+      storageBucket: "secret-chat-b548c.firebasestorage.app",
+      messagingSenderId: "827590183989",
+      appId: "1:827590183989:web:a72dfabdb325997f8f357c"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let username = localStorage.getItem("username");
+    if (!username) {
+      username = prompt("Enter your name:");
+      localStorage.setItem("username", username);
+    }
+
+    const messagesRef = collection(db, "messages");
+    const chatBox = document.getElementById("chat");
+
+    async function sendMessage() {
+      const msg = document.getElementById("msg").value.trim();
+      if (!msg) return;
+      await addDoc(messagesRef, { name: username, text: msg, time: new Date() });
+      document.getElementById("msg").value = "";
+    }
+
+    const q = query(messagesRef, orderBy("time"));
+    onSnapshot(q, snapshot => {
+      chatBox.innerHTML = "";
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        chatBox.innerHTML += `<p><b>${d.name}:</b> ${d.text}</p>`;
+      });
+    });
+
+    window.sendMessage = sendMessage;
+  </script>
+</head>
+<body>
+  <h2>💬 Secret Chat</h2>
+  <div id="chat" style="height:300px;overflow:auto;border:1px solid #ccc;padding:10px;"></div>
+  <input id="msg" placeholder="Type a message..." />
+  <button onclick="sendMessage()">Send</button>
+</body>
+</html>
